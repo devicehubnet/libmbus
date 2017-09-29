@@ -124,7 +124,7 @@ main(int argc, char **argv)
 
     if (mbus_is_secondary_address(addr_mask) == 0)
     {
-        fprintf(stderr, "Misformatted secondary address mask. Must be 16 character HEX number.\n");
+        fprintf(stderr, "Malformed secondary address mask. Must be 16 character HEX number.\n");
         free(addr_mask);
         return 1;
     }
@@ -171,6 +171,9 @@ main(int argc, char **argv)
         free(addr_mask);
         return 1;
     }
+
+    if (debug)
+        printf("%s: debug: address mask: %s\n", __PRETTY_FUNCTION__, addr_mask);
 
     mbus_scan_2nd_address_range(handle, 0, addr_mask);
 

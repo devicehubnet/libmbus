@@ -71,3 +71,5 @@ test/test-frames/*.xml.new
 test/error-frames/*.xml.new
 test/unsupported-frames/*.xml.new
 
+.idea/
+cmake-build-*/
