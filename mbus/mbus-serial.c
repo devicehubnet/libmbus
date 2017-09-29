@@ -79,7 +79,7 @@ mbus_serial_connect(mbus_handle *handle)
     // For 2400Bd this means (330 + 11) / 2400 + 0.15 = 292 ms (added 11 bit periods to receive first byte).
     // I.e. timeout of 0.3s seems appropriate for 2400Bd.
 
-    term->c_cc[VTIME] = (cc_t) 15; // Timeout in 1/10 sec
+    term->c_cc[VTIME] = (cc_t) 20; // Timeout in 1/10 sec
 
     cfsetispeed(term, B2400);
     cfsetospeed(term, B2400);
@@ -132,7 +132,7 @@ mbus_serial_set_baudrate(mbus_handle *handle, long baudrate)
 
         case 2400:
             speed = B2400;
-            serial_data->t.c_cc[VTIME] = (cc_t) 15;  // Timeout in 1/10 sec
+            serial_data->t.c_cc[VTIME] = (cc_t) 20;  // Timeout in 1/10 sec
             break;
 
         case 4800:
@@ -142,7 +142,7 @@ mbus_serial_set_baudrate(mbus_handle *handle, long baudrate)
 
         case 9600:
             speed = B9600;
-            serial_data->t.c_cc[VTIME] = (cc_t) 15;  // Timeout in 1/10 sec
+            serial_data->t.c_cc[VTIME] = (cc_t) 20;  // Timeout in 1/10 sec
             break;
 
         case 19200:
