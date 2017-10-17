@@ -132,7 +132,7 @@ mbus_serial_set_baudrate(mbus_handle *handle, long baudrate)
 
         case 2400:
             speed = B2400;
-            serial_data->t.c_cc[VTIME] = (cc_t) 50;  // Timeout in 1/10 sec
+            serial_data->t.c_cc[VTIME] = (cc_t) 30;  // Timeout in 1/10 sec
             break;
 
         case 4800:
@@ -142,7 +142,7 @@ mbus_serial_set_baudrate(mbus_handle *handle, long baudrate)
 
         case 9600:
             speed = B9600;
-            serial_data->t.c_cc[VTIME] = (cc_t) 50;  // Timeout in 1/10 sec
+            serial_data->t.c_cc[VTIME] = (cc_t) 30;  // Timeout in 1/10 sec
             break;
 
         case 19200:
