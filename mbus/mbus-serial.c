@@ -192,7 +192,13 @@ mbus_serial_disconnect(mbus_handle *handle)
         return -1;
     }
 
+    if (handle->fd < 0)
+    {
+       return -1;
+    }
+
     close(handle->fd);
+    handle->fd = -1;
 
     return 0;
 }
@@ -375,4 +381,3 @@ mbus_serial_recv_frame(mbus_handle *handle, mbus_frame *frame)
 
     return MBUS_RECV_RESULT_OK;
 }
-

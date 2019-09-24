@@ -461,9 +461,9 @@ mbus_data_bcd_encode(unsigned char *bcd_data, size_t bcd_data_size, int value)
     int v0, v1, v2, x1, x2;
     size_t i;
 
-    if (bcd_data && bcd_data_size && (value >= 0))
+    if (bcd_data && bcd_data_size)
     {
-        v2 = value;
+        v2 = abs(value);
 
         for (i = 0; i < bcd_data_size; i++)
         {
@@ -475,6 +475,11 @@ mbus_data_bcd_encode(unsigned char *bcd_data, size_t bcd_data_size, int value)
             x2 = v1 - v2 * 10;
 
             bcd_data[bcd_data_size-1-i] = (x2 << 4) | x1;
+        }
+
+        if (value < 0)
+        {
+            bcd_data[bcd_data_size-1] |= 0xF0;
         }
 
         return 0;
@@ -498,8 +503,20 @@ mbus_data_bcd_decode(unsigned char *bcd_data, size_t bcd_data_size)
     {
         for (i = bcd_data_size; i > 0; i--)
         {
-            val = (val * 10) + ((bcd_data[i-1]>>4) & 0xF);
-            val = (val * 10) + ( bcd_data[i-1]     & 0xF);
+            val = (val * 10);
+
+            if (bcd_data[i-1]>>4 < 0xA)
+            {
+                val += ((bcd_data[i-1]>>4) & 0xF);
+            }
+
+            val = (val * 10) + ( bcd_data[i-1] & 0xF);
+        }
+
+        // hex code Fh in the MSD position signals a negative BCD number
+        if (bcd_data[bcd_data_size-1]>>4 == 0xF)
+        {
+            val *= -1;
         }
 
         return val;
@@ -1088,6 +1105,9 @@ mbus_data_product_name(mbus_data_variable_header *header)
                 case 0x28:
                     strcpy(buff,"ABB F95 Typ US770");
                     break;
+                case 0x2F:
+                    strcpy(buff,"Hydrometer Sharky 775");
+                    break;
             }
         }
         else if (manufacturer == mbus_manufacturer_id("JAN"))
@@ -1559,7 +1579,7 @@ mbus_data_fixed_unit(int medium_unit_byte)
             snprintf(buff, sizeof(buff), "10 m^3");
             break;
         case 0x2E:
-            snprintf(buff, sizeof(buff), "m^3");
+            snprintf(buff, sizeof(buff), "100 m^3");
             break;
 
         case 0x2F:
@@ -1803,7 +1823,7 @@ mbus_unit_prefix(int exp)
             break;
 
         case 9:
-            snprintf(buff, sizeof(buff), "T");
+            snprintf(buff, sizeof(buff), "G");
             break;
 
         default:
@@ -3739,7 +3759,7 @@ mbus_hex_dump(const char *label, const char *buff, size_t len)
 {
     time_t rawtime;
     struct tm * timeinfo;
-    char timestamp[21];
+    char timestamp[22];
     size_t i;
 
     if (label == NULL || buff == NULL)
@@ -3748,7 +3768,7 @@ mbus_hex_dump(const char *label, const char *buff, size_t len)
     time ( &rawtime );
     timeinfo = gmtime ( &rawtime );
 
-    strftime(timestamp,20,"%Y-%m-%d %H:%M:%S",timeinfo);
+    strftime(timestamp,21,"%Y-%m-%d %H:%M:%SZ",timeinfo);
     fprintf(stderr, "[%s] %s (%03zu):", timestamp, label, len);
 
     for (i = 0; i < len; i++)
@@ -3766,6 +3786,7 @@ mbus_data_error_print(int error)
 
     return -1;
 }
+
 
 //------------------------------------------------------------------------------
 //
@@ -3886,7 +3907,7 @@ mbus_data_variable_record_xml(mbus_data_record *record, int record_cnt, int fram
     char str_encoded[768];
     size_t len = 0;
     struct tm * timeinfo;
-    char timestamp[21];
+    char timestamp[22];
     long tariff;
 
     if (record)
@@ -3942,7 +3963,7 @@ mbus_data_variable_record_xml(mbus_data_record *record, int record_cnt, int fram
         if (record->timestamp > 0)
         {
             timeinfo = gmtime (&(record->timestamp));
-            strftime(timestamp,20,"%Y-%m-%dT%H:%M:%S",timeinfo);
+            strftime(timestamp,21,"%Y-%m-%dT%H:%M:%SZ",timeinfo);
             len += snprintf(&buff[len], sizeof(buff) - len,
                             "        <Timestamp>%s</Timestamp>\n", timestamp);
         }
